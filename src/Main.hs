@@ -11,5 +11,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the X11 license for more details. -}
 module Main where
 
+import CLI (getConfiguration)
+
 main :: IO ()
-main = putStrLn "Hello, world!"
+main = getConfiguration >>= print
