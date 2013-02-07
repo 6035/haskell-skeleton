@@ -13,8 +13,6 @@ module CLI (generateUsage, getConfiguration) where
 
 import Control.Applicative ((<$>))
 import Control.Monad (foldM)
-import Control.Monad.Error (ErrorT(..), runErrorT)
-import Control.Monad.Trans (liftIO)
 import Data.List.Split (wordsBy)
 import System.Console.GetOpt
 import System.Environment (getArgs, getProgName)
@@ -120,20 +118,20 @@ readOptimizationSpec optString =
 {-| Parses command-line options, returning a 'Configuration' describing the
 behavior of the compiler. -}
 getConfiguration :: IO (Either String Configuration)
-getConfiguration = runErrorT $ do
+getConfiguration = do
   -- Fetch the arguments and process them.
-  args <- liftIO getArgs
-  let (flagActions, nonOptions, errors) = getOpt Permute options args
-  -- If there were any errors, notify the monad.
-  mapM_ (hoistEither . Left) errors
-  {- Construct the options struct by applying the 'flagActions' to the default
-  configuration. -}
-  selectedOptions <-
-    hoistEither $ foldM (flip id) defaultConfiguration flagActions
-  -- What file are we reading?
-  inputFileName <-
-    hoistEither $ maybeToEither "no input file specified\n" $ headMay nonOptions
-  return $ selectedOptions { input = inputFileName }
+  args <- getArgs
+  return $ do
+    let (flagActions, nonOptions, errors) = getOpt Permute options args
+    -- If there were any errors, notify the monad.
+    mapM_ Left errors
+    {- Construct the options struct by applying the 'flagActions' to the
+    default configuration. -}
+    selectedOptions <- foldM (flip id) defaultConfiguration flagActions
+    -- What file are we reading?
+    inputFileName <-
+      maybeToEither "no input file specified\n" $ headMay nonOptions
+    return $ selectedOptions { input = inputFileName }
 
 
 ----------------------------------- Utility -----------------------------------
@@ -145,6 +143,3 @@ headMay (x:_) = Just x
 maybeToEither :: e -> Maybe a -> Either e a
 maybeToEither _ (Just a) = Right a
 maybeToEither msg Nothing = Left msg
-
-hoistEither :: (Monad m) => Either e a -> ErrorT e m a
-hoistEither = ErrorT . return
