@@ -14,11 +14,23 @@ module Main where
 import CLI (generateUsage, getConfiguration)
 import System.IO (hPutStr, hPutStrLn, stderr)
 
+import Configuration (CompilerStage(..))
+import qualified Configuration
+import qualified Scanner
+import qualified Scanner.Pretty
+
 main :: IO ()
 main = do
   eitherConf <- getConfiguration
   case eitherConf of
     Left err -> do
+      -- Error on the command line.
       hPutStrLn stderr err
       generateUsage >>= hPutStr stderr
-    Right conf -> print conf
+    Right conf ->
+      -- Okay, we actually should try to compile something.
+      case Configuration.target conf of
+        Scan -> do
+          source <- readFile $ Configuration.input conf
+          Scanner.Pretty.print $ Scanner.scanTokens source
+        _ -> error "not yet implemented"
