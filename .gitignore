@@ -1,0 +1,7 @@
+# .gitignore                                                       -*- conf -*-
+
+# Editor backup files
+*~
+
+# Compiled Haskell
+dist/

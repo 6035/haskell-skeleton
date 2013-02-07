@@ -1,0 +1,22 @@
+name:                decafc
+version:             0.0.0
+license:             MIT
+license-file:        LICENSE
+author:              Benjamin Barenblat
+maintainer:          bbaren@mit.edu
+copyright:           2013 Benjamin Barenblat
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable decafc
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  ghc-options:         -Wall
+  build-depends:       base ==4.5.*
+
+
+-- Local Variables:
+-- mode: Haskell-Cabal
+-- fill-column: 70
+-- indent-tabs-mode: nil
+-- End:
