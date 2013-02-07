@@ -11,7 +11,14 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the X11 license for more details. -}
 module Main where
 
-import CLI (getConfiguration)
+import CLI (generateUsage, getConfiguration)
+import System.IO (hPutStr, hPutStrLn, stderr)
 
 main :: IO ()
-main = getConfiguration >>= print
+main = do
+  eitherConf <- getConfiguration
+  case eitherConf of
+    Left err -> do
+      hPutStrLn stderr err
+      generateUsage >>= hPutStr stderr
+    Right conf -> print conf

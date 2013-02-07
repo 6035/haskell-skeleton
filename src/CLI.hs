@@ -9,7 +9,7 @@ terms of the MIT (X11) License as described in the LICENSE file.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the X11 license for more details. -}
-module CLI (getConfiguration) where
+module CLI (generateUsage, getConfiguration) where
 
 import Control.Applicative ((<$>))
 import Control.Monad (foldM)
@@ -102,7 +102,7 @@ readStage :: String -> Either String CompilerStage
 readStage stageString =
   case reads stageString of
     [(stage, "")] -> Right stage
-    _ -> Left $ printf "Unknown stage \"%s\"" stageString
+    _ -> Left $ printf "unknown stage `%s'\n" stageString
 
 readOptimizationSpec :: String -> Either String OptimizationSpecification
 readOptimizationSpec optString =
@@ -132,7 +132,7 @@ getConfiguration = runErrorT $ do
     hoistEither $ foldM (flip id) defaultConfiguration flagActions
   -- What file are we reading?
   inputFileName <-
-    hoistEither $ maybeToEither "No input file specified" $ headMay nonOptions
+    hoistEither $ maybeToEither "no input file specified\n" $ headMay nonOptions
   return $ selectedOptions { input = inputFileName }
 
 
