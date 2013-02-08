@@ -17,7 +17,7 @@ module Scanner ( ScannedToken, line, token
                ) where
 }
 
-%wrapper "posn"                 -- keep track of line numbers
+%wrapper "6.035"
 
 
 ----------------------------------- Tokens ------------------------------------
@@ -61,6 +61,6 @@ scannedToken (AlexPn _ lineNo _) tok = ScannedToken lineNo tok
 
 ---------------------------- Scanning entry point -----------------------------
 
-scanTokens :: String -> [ScannedToken]
+scanTokens :: String -> [Either String ScannedToken]
 scanTokens = alexScanTokens
 }

@@ -12,6 +12,8 @@ PARTICULAR PURPOSE.  See the X11 license for more details. -}
 module Main where
 
 import CLI (generateUsage, getConfiguration)
+import Data.Either (partitionEithers)
+import qualified System.Exit
 import System.IO (hPutStr, hPutStrLn, stderr)
 
 import Configuration (CompilerStage(..))
@@ -27,15 +29,26 @@ main = do
     Left err -> do
       -- Error on the command line.
       hPutStrLn stderr err
-      generateUsage >>= hPutStr stderr
+      generateUsage >>= fatal
     Right conf ->
       -- Okay, we actually should try to compile something.
       case Configuration.target conf of
         Scan -> do
           source <- readFile $ Configuration.input conf
-          Scanner.Pretty.print $ Scanner.scanTokens source
+          printTokens $ Scanner.scanTokens source
         Parse -> do
           source <- readFile $ Configuration.input conf
-          let tokens = map Scanner.token $ Scanner.scanTokens source
-          print $ Parser.parseProgram tokens
+          case partitionEithers $ Scanner.scanTokens source of
+            ([], scannedTokens) ->
+              print $ Parser.parseProgram $ map Scanner.token scannedTokens
+            (errors, _) -> fatal $ concatMap (++"\n") errors
         _ -> error "not yet implemented"
+
+fatal :: String -> IO ()
+fatal message = do
+  hPutStr stderr message
+  System.Exit.exitFailure
+
+printTokens :: [Either String Scanner.ScannedToken] -> IO ()
+printTokens =
+  mapM_ $ either (hPutStrLn stderr) (putStrLn . Scanner.Pretty.formatOne)
