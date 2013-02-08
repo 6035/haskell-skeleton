@@ -48,7 +48,7 @@ data Token = Keyword String
            | RCurly
            deriving (Eq)
 instance Show Token where
-  show (Keyword k) = "KEYWORD " ++ k
+  show (Keyword k) = k
   show (Identifier s) = "IDENTIFIER " ++ s
   show LCurly = "{"
   show RCurly = "}"
