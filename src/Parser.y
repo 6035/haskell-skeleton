@@ -10,7 +10,7 @@
 -- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 -- FITNESS FOR A PARTICULAR PURPOSE.  See the X11 license for more details.
 {
-module Parser ( parseProgram
+module Parser ( parse
               ) where
 
 import Scanner (Token(..))
@@ -20,8 +20,9 @@ import Scanner (Token(..))
 
 --------------------------------- Directives ----------------------------------
 
-%name parseProgram
+%name parse
 %error { parseError }
+%monad { Either String }
 
 %tokentype { Token }
 
@@ -42,6 +43,6 @@ Program : class identifier '{' '}' { Program $2 }
 data Program = Program { className :: String
                        } deriving (Eq, Show)
 
-parseError :: [Token] -> a
-parseError _ = error "parse error"
+parseError :: [Token] -> Either String a
+parseError toks = Left $ show toks
 }

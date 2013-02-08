@@ -11,44 +11,72 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the X11 license for more details. -}
 module Main where
 
-import CLI (generateUsage, getConfiguration)
-import Data.Either (partitionEithers)
-import qualified System.Exit
-import System.IO (hPutStr, hPutStrLn, stderr)
+import Prelude hiding (readFile)
+import qualified Prelude
 
-import Configuration (CompilerStage(..))
+import Control.Monad.Error (ErrorT(..), runErrorT)
+import Control.Monad.IO.Class (liftIO)
+import Data.Either (partitionEithers)
+import System.Environment (getProgName)
+import qualified System.Exit
+import System.IO (hPutStrLn, stderr)
+import Text.Printf (printf)
+
+import qualified CLI
+import Configuration (Configuration, CompilerStage(..))
 import qualified Configuration
 import qualified Parser
 import qualified Scanner
-import qualified Scanner.Pretty
+
+
+------------------------ Impure code: Fun with ErrorT -------------------------
 
 main :: IO ()
 main = do
-  eitherConf <- getConfiguration
-  case eitherConf of
-    Left err -> do
-      -- Error on the command line.
-      hPutStrLn stderr err
-      generateUsage >>= fatal
-    Right conf ->
-      -- Okay, we actually should try to compile something.
-      case Configuration.target conf of
-        Scan -> do
-          source <- readFile $ Configuration.input conf
-          printTokens $ Scanner.scanTokens source
-        Parse -> do
-          source <- readFile $ Configuration.input conf
-          case partitionEithers $ Scanner.scanTokens source of
-            ([], scannedTokens) ->
-              print $ Parser.parseProgram $ map Scanner.token scannedTokens
-            (errors, _) -> fatal $ concatMap (++"\n") errors
-        _ -> error "not yet implemented"
+  {- Compiler work can be split into three stages: reading input (impure),
+  processing it (pure), and writing output (impure).  Of course, input might be
+  malformed or there might be an error in processing.  Thus, it makes most
+  sense to think of the compiler as having type ErrorT String IO [IO ()] --
+  that is, computation might fail with a String or succeed with a series of IO
+  actions. -}
+  result <- runErrorT $ do
+    -- Part I: Get input
+    configuration <- ErrorT CLI.getConfiguration
+    input <- readFile $ Configuration.input configuration
+    -- Part II: Process it
+    hoistEither $ process configuration input
+  case result of
+    -- Part III: Write output
+    Left errorMessage -> fatal errorMessage
+    Right actions -> sequence_ actions
+  where hoistEither = ErrorT . return
+
+readFile :: FilePath -> ErrorT String IO String
+readFile name = liftIO $ Prelude.readFile name
 
 fatal :: String -> IO ()
 fatal message = do
-  hPutStr stderr message
+  progName <- getProgName
+  hPutStrLn stderr $ printf "%s: %s" progName message
   System.Exit.exitFailure
 
-printTokens :: [Either String Scanner.ScannedToken] -> IO ()
-printTokens =
-  mapM_ $ either (hPutStrLn stderr) (putStrLn . Scanner.Pretty.formatOne)
+
+---------------------------- Pure code: Processing ----------------------------
+
+{- The pure guts of the compiler convert input to output.  Exactly what output
+they produce, though, depends on the configuration. -}
+process :: Configuration -> String -> Either String [IO ()]
+process configuration input =
+  case Configuration.target configuration of
+    Scan ->
+      let tokensAndErrors = Scanner.scan input in
+      let output = Scanner.formatTokensAndErrors tokensAndErrors in
+      Right [ writeFile (Configuration.output configuration) output ]
+    Parse -> do
+      let (errors, tokens) = partitionEithers $ Scanner.scan input
+      mapM_ Left errors         -- if errors occurred, bail out
+      -- output <- Parser.parse $ map Scanner.extractRawToken tokens
+      -- Right [ writeFile (Configuration.output configuration) output ]
+      let output = Parser.parse $ map Scanner.extractRawToken tokens
+      Right [ print output ]
+    phase -> Left $ show phase ++ " not implemented\n"

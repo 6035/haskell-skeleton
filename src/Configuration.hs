@@ -9,29 +9,33 @@ terms of the MIT (X11) License as described in the LICENSE file.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the X11 license for more details. -}
-module Configuration ( Configuration(..), target, output
+module Configuration ( Configuration
+                     , input, target, debug, opt, output
                      , defaultConfiguration
                      , CompilerStage(..)
                      , OptimizationSpecification(..)
                      , OptimizationName(..)
                      ) where
 
+import Data.Maybe (fromMaybe)
 import System.FilePath (replaceExtension)
+
+import Configuration.Types ( Configuration(..)
+                           , input, debug, opt
+                           , explicitTarget, explicitOutput
+                           , defaultConfiguration
+                           , CompilerStage(..)
+                           , OptimizationSpecification(..)
+                           , OptimizationName(..)
+                           )
 
 
 --------------------------- The configuration type ----------------------------
-
-data Configuration = Configuration { input :: FilePath
-                                   , explicitTarget :: Maybe CompilerStage
-                                   , debug :: Bool
-                                   , opt :: OptimizationSpecification
-                                   , explicitOutput :: Maybe FilePath
-                                   } deriving (Eq, Show) -- DEBUG: Remove Show
-
 {- 'input', 'debug', and 'opt' are fine accessor functions.  'target' and
 'output', on the other hand, is a bit special. -}
+
 target :: Configuration -> CompilerStage
-target conf = maybe defaultTarget id $ explicitTarget conf
+target conf = fromMaybe defaultTarget $ explicitTarget conf
   where defaultTarget = Parse   -- this will change as the course proceeds
 
 output :: Configuration -> FilePath
@@ -45,43 +49,3 @@ output conf =
              Just Parse -> ".parse"
              Just Inter -> ".ir"
              Just Assembly -> ".s"
-
-defaultConfiguration :: Configuration
-defaultConfiguration = Configuration { input = undefined
-                                     , explicitTarget = Nothing
-                                     , debug = False
-                                     , opt = All
-                                     , explicitOutput = Nothing
-                                     }
-
-
-------------------------------- Compiler stages -------------------------------
-
-data CompilerStage = Scan
-                   | Parse
-                   | Inter
-                   | Assembly
-                   deriving (Eq, Ord)
-instance Show CompilerStage where
-  show Scan = "scan"
-  show Parse = "parse"
-  show Inter = "inter"
-  show Assembly = "assembly"
-instance Read CompilerStage where
-  readsPrec _ "scan" = [(Scan, "")]
-  readsPrec _ "parse" = [(Parse, "")]
-  readsPrec _ "inter" = [(Inter, "")]
-  readsPrec _ "assembly" = [(Assembly, "")]
-  readsPrec _ _ = []
-
-
--------------------------- Describing optimizations ---------------------------
-
-data OptimizationSpecification = All
-                               | Some [OptimizationName]
-                               deriving (Eq, Show) -- DEBUG: Remove Show
-
--- String might be the wrong type to use here, but whatever.
-data OptimizationName = Enable String
-                      | Disable String
-                      deriving (Eq, Show) -- DEBUG: Remove Show

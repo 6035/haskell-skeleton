@@ -19,6 +19,7 @@ import System.Environment (getArgs, getProgName)
 import Text.Printf (printf)
 
 import Configuration
+import Configuration.Types
 
 
 --------------------------------- FlagAction ----------------------------------
@@ -41,8 +42,11 @@ generateUsage = do
   return $ unlines [ firstLine
                    , usageInfo "Summary of options:" options
                    , "Long description of options:"
-                   , longDescription
+                   , init longDescription -- drop trailing newline
                    ]
+
+{- The rest of this section is organized in the order of the lines in the usage
+message. -}
 
 generateSummary :: IO String
 generateSummary =
@@ -107,10 +111,10 @@ readOptimizationSpec optString =
   let opts = wordsBy (==',') optString in
   if "all" `elem` opts
   then Right All
-  else Right $ Some $ map (\optSpec -> case optSpec of
-                                         ('-':optName) -> Disable optName
-                                         optName -> Enable optName)
-                          opts
+  else Right $ Some $ for opts $ \optSpec -> case optSpec of
+                                               ('-':optName) -> Disable optName
+                                               optName -> Enable optName
+  where for = flip map
 
 
 ------------------------------ Main entry points ------------------------------
@@ -121,25 +125,25 @@ getConfiguration :: IO (Either String Configuration)
 getConfiguration = do
   -- Fetch the arguments and process them.
   args <- getArgs
-  return $ do
-    let (flagActions, nonOptions, errors) = getOpt Permute options args
-    -- If there were any errors, notify the monad.
-    mapM_ Left errors
-    {- Construct the options struct by applying the 'flagActions' to the
-    default configuration. -}
-    selectedOptions <- foldM (flip id) defaultConfiguration flagActions
-    -- What file are we reading?
-    inputFileName <-
-      maybeToEither "no input file specified\n" $ headMay nonOptions
-    return $ selectedOptions { input = inputFileName }
+  -- return $ do
+  let maybeSelectedOptions = do
+        let (flagActions, nonOptions, errors) = getOpt Permute options args
+        -- If there were any errors, notify the monad.
+        mapM_ Left errors
+        {- Construct the options struct by applying the 'flagActions' to the
+        default configuration. -}
+        selectedOptions <- foldM (flip id) defaultConfiguration flagActions
+        -- What file are we reading?
+        inputFileName <-
+          maybeToEither "no input file specified\n" $ headMay nonOptions
+        Right $ selectedOptions { input = inputFileName }
+  case maybeSelectedOptions of
+    Left errorMessage -> do
+      usage <- init <$> generateUsage -- drop trailing newline
+      return $ Left $ init $ unlines [errorMessage, usage]
+    Right selectedOptions -> return $ Right selectedOptions
 
-
------------------------------------ Utility -----------------------------------
-
-headMay :: [a] -> Maybe a
-headMay [] = Nothing
-headMay (x:_) = Just x
-
-maybeToEither :: e -> Maybe a -> Either e a
-maybeToEither _ (Just a) = Right a
-maybeToEither msg Nothing = Left msg
+  where maybeToEither _ (Just a) = Right a
+        maybeToEither msg Nothing = Left msg
+        headMay [] = Nothing
+        headMay (x:_) = Just x

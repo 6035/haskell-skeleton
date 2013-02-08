@@ -11,9 +11,10 @@
 -- FITNESS FOR A PARTICULAR PURPOSE.  See the X11 license for more details.
 {
 {-# OPTIONS_GHC -w #-}
-module Scanner ( ScannedToken, line, token
+module Scanner ( ScannedToken, line, extractRawToken
                , Token(..)
-               , scanTokens
+               , scan
+               , formatTokensAndErrors
                ) where
 }
 
@@ -38,7 +39,7 @@ tokens :-
 {
 -- | A token with position information.
 data ScannedToken = ScannedToken { line :: Int
-                                 , token :: Token
+                                 , extractRawToken :: Token
                                  } deriving (Eq, Show)
 
 -- | A token.
@@ -61,6 +62,15 @@ scannedToken (AlexPn _ lineNo _) tok = ScannedToken lineNo tok
 
 ---------------------------- Scanning entry point -----------------------------
 
-scanTokens :: String -> [Either String ScannedToken]
-scanTokens = alexScanTokens
+scan :: String -> [Either String ScannedToken]
+scan = alexScanTokens
+
+formatTokensAndErrors :: [Either String ScannedToken] -> String
+formatTokensAndErrors = unlines . map formatTokenOrError
+  where formatTokenOrError tokenOrError =
+          case tokenOrError of
+            Left err -> err
+            Right tok -> unwords [ show $ line tok
+                                 , show $ extractRawToken tok
+                                 ]
 }
