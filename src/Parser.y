@@ -13,7 +13,9 @@
 module Parser ( parse
               ) where
 
-import Scanner (Token(..))
+import Text.Printf (printf)
+
+import Scanner (ScannedToken(..), Token(..))
 
 }
 
@@ -24,13 +26,13 @@ import Scanner (Token(..))
 %error { parseError }
 %monad { Either String }
 
-%tokentype { Token }
+%tokentype { ScannedToken }
 
 %token
-  class      { Keyword "class" }
-  identifier { Identifier $$ }
-  '{'        { LCurly }
-  '}'        { RCurly }
+  class      { ScannedToken _ _ (Keyword "class") }
+  identifier { ScannedToken _ _ (Identifier $$) }
+  '{'        { ScannedToken _ _ LCurly }
+  '}'        { ScannedToken _ _ RCurly }
 
 
 %% -------------------------------- Grammar -----------------------------------
@@ -43,6 +45,16 @@ Program : class identifier '{' '}' { Program $2 }
 data Program = Program { className :: String
                        } deriving (Eq, Show)
 
-parseError :: [Token] -> Either String a
-parseError toks = Left $ show toks
+parseError :: [ScannedToken] -> Either String a
+parseError [] = Left "unexpected EOF"
+parseError toks =
+  Left $ printf "line %d:%d: unexpected token%s '%s'"
+                lineNo
+                columnNo
+                (if (not $ null $ tail toks) then "s" else "")
+                badTokenText
+  where firstBadToken = head toks
+        lineNo = Scanner.line firstBadToken
+        columnNo = Scanner.column firstBadToken
+        badTokenText = concatMap (show . extractRawToken) toks
 }

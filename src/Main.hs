@@ -14,6 +14,7 @@ module Main where
 import Prelude hiding (readFile)
 import qualified Prelude
 
+import Control.Monad (void)
 import Control.Monad.Error (ErrorT(..), runErrorT)
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (partitionEithers)
@@ -75,8 +76,6 @@ process configuration input =
     Parse -> do
       let (errors, tokens) = partitionEithers $ Scanner.scan input
       mapM_ Left errors         -- if errors occurred, bail out
-      -- output <- Parser.parse $ map Scanner.extractRawToken tokens
-      -- Right [ writeFile (Configuration.output configuration) output ]
-      let output = Parser.parse $ map Scanner.extractRawToken tokens
-      Right [ print output ]
+      void $ Parser.parse tokens
+      Right []
     phase -> Left $ show phase ++ " not implemented\n"

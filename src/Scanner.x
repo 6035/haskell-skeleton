@@ -11,7 +11,7 @@
 -- FITNESS FOR A PARTICULAR PURPOSE.  See the X11 license for more details.
 {
 {-# OPTIONS_GHC -w #-}
-module Scanner ( ScannedToken, line, extractRawToken
+module Scanner ( ScannedToken(..)
                , Token(..)
                , scan
                , formatTokensAndErrors
@@ -39,6 +39,7 @@ tokens :-
 {
 -- | A token with position information.
 data ScannedToken = ScannedToken { line :: Int
+                                 , column :: Int
                                  , extractRawToken :: Token
                                  } deriving (Eq, Show)
 
@@ -54,10 +55,10 @@ instance Show Token where
   show LCurly = "{"
   show RCurly = "}"
 
-{-| Smart constructor to create a 'ScannedToken' by extracting the line number
-from an 'AlexPosn'. -}
+{-| Smart constructor to create a 'ScannedToken' by extracting the line and
+column numbers from an 'AlexPosn'. -}
 scannedToken :: AlexPosn -> Token -> ScannedToken
-scannedToken (AlexPn _ lineNo _) tok = ScannedToken lineNo tok
+scannedToken (AlexPn _ lineNo columnNo) tok = ScannedToken lineNo columnNo tok
 
 
 ---------------------------- Scanning entry point -----------------------------
