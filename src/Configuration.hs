@@ -9,7 +9,7 @@ terms of the MIT (X11) License as described in the LICENSE file.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the X11 license for more details. -}
-module Configuration ( Configuration(..), output
+module Configuration ( Configuration(..), target, output
                      , defaultConfiguration
                      , CompilerStage(..)
                      , OptimizationSpecification(..)
@@ -22,27 +22,33 @@ import System.FilePath (replaceExtension)
 --------------------------- The configuration type ----------------------------
 
 data Configuration = Configuration { input :: FilePath
-                                   , target :: CompilerStage
+                                   , explicitTarget :: Maybe CompilerStage
                                    , debug :: Bool
                                    , opt :: OptimizationSpecification
                                    , explicitOutput :: Maybe FilePath
                                    } deriving (Eq, Show) -- DEBUG: Remove Show
 
-{- 'input', 'target', 'debug', and 'opt' are fine accessor functions.
+{- 'input', 'debug', and 'opt' are fine accessor functions.  'target' and
 'output', on the other hand, is a bit special. -}
+target :: Configuration -> CompilerStage
+target conf = maybe defaultTarget id $ explicitTarget conf
+  where defaultTarget = Parse   -- this will change as the course proceeds
+
 output :: Configuration -> FilePath
 output conf =
   case explicitOutput conf of
     Just path -> path
-    _ -> replaceExtension (input conf) $ case target conf of
-                                           Scan -> ".scan"
-                                           Parse -> ".parse"
-                                           Inter -> ".ir"
-                                           Assembly -> ".s"
+    _ -> replaceExtension (input conf) $
+           case explicitTarget conf of
+             Nothing -> ".out"
+             Just Scan -> ".scan"
+             Just Parse -> ".parse"
+             Just Inter -> ".ir"
+             Just Assembly -> ".s"
 
 defaultConfiguration :: Configuration
 defaultConfiguration = Configuration { input = undefined
-                                     , target = Assembly
+                                     , explicitTarget = Nothing
                                      , debug = False
                                      , opt = All
                                      , explicitOutput = Nothing

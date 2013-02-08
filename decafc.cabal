@@ -11,7 +11,7 @@ cabal-version:       >=1.8
 executable decafc
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Scanner
+  other-modules:       Scanner, Parser
   ghc-options:         -Wall
   build-depends:       base ==4.5.*
                      , array ==0.4.*

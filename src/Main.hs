@@ -16,6 +16,7 @@ import System.IO (hPutStr, hPutStrLn, stderr)
 
 import Configuration (CompilerStage(..))
 import qualified Configuration
+import qualified Parser
 import qualified Scanner
 import qualified Scanner.Pretty
 
@@ -33,4 +34,8 @@ main = do
         Scan -> do
           source <- readFile $ Configuration.input conf
           Scanner.Pretty.print $ Scanner.scanTokens source
+        Parse -> do
+          source <- readFile $ Configuration.input conf
+          let tokens = map Scanner.token $ Scanner.scanTokens source
+          print $ Parser.parseProgram tokens
         _ -> error "not yet implemented"

@@ -53,7 +53,7 @@ options :: [OptDescr FlagAction]
 options = [ Option ['t'] ["target"]
                    (ReqArg (\stage -> \conf -> do
                                          parsedStage <- readStage stage
-                                         return $ conf { target = parsedStage })
+                                         return $ conf { explicitTarget = Just parsedStage })
                            "<stage>")
                    "compile to the given stage"
           , Option ['o'] ["output"]
