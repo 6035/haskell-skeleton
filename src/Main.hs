@@ -68,14 +68,32 @@ fatal message = do
 they produce, though, depends on the configuration. -}
 process :: Configuration -> String -> Either String [IO ()]
 process configuration input =
+  {- Since our compiler only handles single files, the 'Configuration' struct
+  doesn't currently get passed through to the scanner and parser code.  (This
+  may change--one can see the scanner and parser as acting in a reader monad.)
+  The big problem with this is that error messages generated in the scanner and
+  parser won't contain the file name--the file name has to get added in this
+  function. -}
+  let mungeErrorMessage =
+        ifLeft ((Configuration.input configuration ++ " ")++)
+  in
+  -- Dispatch on the configuration, modifying error messages appropriately.
   case Configuration.target configuration of
     Scan ->
-      let tokensAndErrors = Scanner.scan input in
-      let output = Scanner.formatTokensAndErrors tokensAndErrors in
+      let output =
+            Scanner.scan input |>
+            map mungeErrorMessage |>
+            Scanner.formatTokensAndErrors
+      in
       Right [ writeFile (Configuration.output configuration) output ]
     Parse -> do
       let (errors, tokens) = partitionEithers $ Scanner.scan input
-      mapM_ Left errors         -- if errors occurred, bail out
-      void $ Parser.parse tokens
+      -- If errors occurred, bail out.
+      mapM_ (mungeErrorMessage . Left) errors
+      -- Otherwise, attempt a parse.
+      void $ mungeErrorMessage $ Parser.parse tokens
       Right []
     phase -> Left $ show phase ++ " not implemented\n"
+  where ifLeft f (Left v) = Left $ f v
+        ifLeft _ (Right a) = Right a
+        v |> f = f v            -- like a Unix pipeline, but pure
