@@ -24,7 +24,7 @@ defaultConfiguration :: Configuration
 defaultConfiguration = Configuration { input = undefined
                                      , explicitTarget = Nothing
                                      , debug = False
-                                     , opt = All
+                                     , opt = Some [] -- no optimizations
                                      , explicitOutput = Nothing
                                      }
 
