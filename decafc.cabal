@@ -1,18 +1,23 @@
+cabal-version:       >=1.8
 name:                decafc
 version:             0.0.0
-license:             MIT
-license-file:        LICENSE
+copyright:           (C) 2013 Benjamin Barenblat
 author:              Benjamin Barenblat
 maintainer:          bbaren@mit.edu
-copyright:           2013 Benjamin Barenblat
+license:             MIT
+license-file:        LICENSE
+extra-source-files:  alex/*6.035
 build-type:          Simple
-cabal-version:       >=1.8
+tested-with:         GHC==7.4.2
 
 executable decafc
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Scanner
+  other-modules:       CLI
+                     , Configuration
+                     , Configuration.Types
                      , Parser
+                     , Scanner
   ghc-options:         -Wall -O3
   build-depends:       base ==4.5.*
                      , array ==0.4.*
@@ -20,6 +25,8 @@ executable decafc
                      , mtl ==2.1.*
                      , split ==0.2.*
                      , transformers ==0.3.*
+  build-tools:         alex >=3.0.2
+                     , happy
 
 
 -- Local Variables:
