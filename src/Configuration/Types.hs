@@ -18,7 +18,7 @@ data Configuration = Configuration { input :: FilePath
                                    , debug :: Bool
                                    , opt :: OptimizationSpecification
                                    , explicitOutput :: Maybe FilePath
-                                   } deriving (Eq, Show) -- DEBUG: Remove Show
+                                   } deriving (Eq)
 
 defaultConfiguration :: Configuration
 defaultConfiguration = Configuration { input = undefined
@@ -53,9 +53,9 @@ instance Read CompilerStage where
 
 data OptimizationSpecification = All
                                | Some [OptimizationName]
-                               deriving (Eq, Show) -- DEBUG: Remove Show
+                               deriving (Eq)
 
 -- String might be the wrong type to use here, but whatever.
 data OptimizationName = Enable String
                       | Disable String
-                      deriving (Eq, Show) -- DEBUG: Remove Show
+                      deriving (Eq)

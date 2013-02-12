@@ -43,7 +43,7 @@ Program : class identifier '{' '}' { Program $2 }
 ----------------------------------- Haskell -----------------------------------
 {
 data Program = Program { className :: String
-                       } deriving (Eq, Show)
+                       } deriving (Eq)
 
 parseError :: [ScannedToken] -> Either String a
 parseError [] = Left "unexpected EOF"

@@ -41,7 +41,7 @@ tokens :-
 data ScannedToken = ScannedToken { line :: Int
                                  , column :: Int
                                  , extractRawToken :: Token
-                                 } deriving (Eq, Show)
+                                 } deriving (Eq)
 
 -- | A token.
 data Token = Keyword String
