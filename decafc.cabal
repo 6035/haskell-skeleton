@@ -6,7 +6,7 @@ author:              Benjamin Barenblat
 maintainer:          bbaren@mit.edu
 license:             MIT
 license-file:        LICENSE
-extra-source-files:  alex/*6.035
+extra-source-files:  alex/AlexWrapper-6.035
 build-type:          Simple
 tested-with:         GHC==7.4.2
 
