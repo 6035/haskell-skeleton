@@ -85,7 +85,10 @@ process configuration input =
             map mungeErrorMessage |>
             Scanner.formatTokensAndErrors
       in
-      Right [ writeFile (Configuration.output configuration) output ]
+      Right [ case Configuration.outputFileName configuration of
+                 Nothing -> putStr output
+                 Just fileName -> writeFile fileName output
+            ]
     Parse -> do
       let (errors, tokens) = partitionEithers $ Scanner.scan input
       -- If errors occurred, bail out.
