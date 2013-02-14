@@ -32,7 +32,7 @@ import Configuration.Types ( Configuration(..)
 
 --------------------------- The configuration type ----------------------------
 {- 'input', 'debug', and 'opt' are fine accessor functions.  'target' and
-'output', on the other hand, is a bit special. -}
+'output', on the other hand, are a bit special. -}
 
 target :: Configuration -> CompilerStage
 target conf = fromMaybe defaultTarget $ explicitTarget conf
