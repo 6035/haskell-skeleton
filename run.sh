@@ -9,11 +9,14 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the X11 license for more details.
 
-cd $(git rev-parse --show-toplevel)
+gitroot=$(git rev-parse --show-toplevel)
 
-DECAFC="dist/build/decafc/decafc"
+DECAFC="$gitroot/dist/build/decafc/decafc"
 
 if [ ! -f $DECAFC ]; then
+    tmp=$PWD
+    cd $gitroot
     ./build.sh
+    cd $tmp
 fi
 $DECAFC $@
