@@ -1,14 +1,27 @@
+-- Copyright (C) 2013, 2014  Benjamin Barenblat <bbaren@mit.edu>
+--
+-- This file is a part of decafc.
+--
+-- decafc is free software: you can redistribute it and/or modify it
+-- under the terms of the MIT (X11) License as described in the
+-- LICENSE file.
+--
+-- This program is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the X11
+-- license for more details.
+
 cabal-version:       >=1.8
 name:                decafc
 version:             0.0.0
-copyright:           (C) 2013 Benjamin Barenblat
+copyright:           © 2013, 2014 Benjamin Barenblat
 author:              Benjamin Barenblat
 maintainer:          bbaren@mit.edu
 license:             MIT
 license-file:        LICENSE
 extra-source-files:  alex/AlexWrapper-6.035
 build-type:          Simple
-tested-with:         GHC==7.4.2
+tested-with:         GHC==7.8.2
 
 executable decafc
   hs-source-dirs:      src
@@ -19,12 +32,10 @@ executable decafc
                      , Parser
                      , Scanner
   ghc-options:         -Wall -O3
-  build-depends:       base ==4.*
+  build-depends:       base >=4.5 && <4.8
                      , array ==0.5.*
-                     , filepath ==1.3.*
-                     , mtl ==2.1.*
                      , split ==0.2.*
-                     , transformers ==0.3.*
+                     , transformers ==0.4.*
   build-tools:         alex >=3.0.2
                      , happy
 

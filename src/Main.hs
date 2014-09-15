@@ -1,5 +1,5 @@
 {- Main -- main entry point
-Copyright (C) 2013  Benjamin Barenblat <bbaren@mit.edu>
+Copyright (C) 2013, 2014  Benjamin Barenblat <bbaren@mit.edu>
 
 This file is a part of decafc.
 
@@ -16,8 +16,8 @@ import qualified Prelude
 
 import Control.Exception (bracket)
 import Control.Monad (forM_, void)
-import Control.Monad.Error (ErrorT(..), runErrorT)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Except (ExceptT(..), runExceptT)
 import Data.Either (partitionEithers)
 import GHC.IO.Handle (hDuplicate)
 import System.Environment (getProgName)
@@ -32,19 +32,19 @@ import qualified Parser
 import qualified Scanner
 
 
------------------------- Impure code: Fun with ErrorT -------------------------
+------------------------ Impure code: Fun with ExceptT ------------------------
 
 main :: IO ()
 main = do
   {- Compiler work can be split into three stages: reading input (impure),
   processing it (pure), and writing output (impure).  Of course, input might be
   malformed or there might be an error in processing.  Thus, it makes most
-  sense to think of the compiler as having type ErrorT String IO [IO ()] --
+  sense to think of the compiler as having type ExceptT String IO [IO ()] --
   that is, computation might fail with a String or succeed with a series of IO
   actions. -}
-  result <- runErrorT $ do
+  result <- runExceptT $ do
     -- Part I: Get input
-    configuration <- ErrorT CLI.getConfiguration
+    configuration <- ExceptT CLI.getConfiguration
     input <- readFile $ Configuration.input configuration
     -- Part II: Process it
     hoistEither $ process configuration input
@@ -52,9 +52,9 @@ main = do
     -- Part III: Write output
     Left errorMessage -> fatal errorMessage
     Right actions -> sequence_ actions
-  where hoistEither = ErrorT . return
+  where hoistEither = ExceptT . return
 
-readFile :: FilePath -> ErrorT String IO String
+readFile :: FilePath -> ExceptT String IO String
 readFile name = liftIO $ Prelude.readFile name
 
 fatal :: String -> IO ()

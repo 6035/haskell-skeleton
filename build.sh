@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash -eu
 # build.sh -- Athena build script
-# Copyright (C) 2013  Benjamin Barenblat <bbaren@mit.edu>
+# Copyright (C) 2013, 2014  Benjamin Barenblat <bbaren@mit.edu>
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the MIT (X11) License as described in the LICENSE file.
@@ -9,13 +9,34 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the X11 license for more details.
 
-PLATFORM_PACKAGE_DB=/mit/ghc/arch/amd64_deb60/lib/ghc-7.4.2/package.conf.d
+declare -r GHC_VERSION=7.8.2
+declare -r TOP="$(git rev-parse --show-toplevel)"
 
-add () {
-    eval "$( /bin/attach -Padd -b $add_flags "$@" )"
+declare -r GREP="grep --quiet --no-messages"
+
+function have {
+    type "$1" &>/dev/null
 }
 
-cd $(git rev-parse --show-toplevel)
-add -f ghc
-cabal --package-db=clear --package-db=$PLATFORM_PACKAGE_DB configure
-cabal --alex-options="--ghc --template=\"$(git rev-parse --show-toplevel)/alex\""  build
+cd "$TOP"
+eval $(attach -Padd -b -f ghc)
+
+if [[ ! -d .cabal-sandbox ]]; then
+    # No Cabal sandbox yet.  Set one up.
+    cabal sandbox init
+fi
+
+PATH="$TOP"/.cabal-sandbox/bin:"$PATH"
+
+for package in alex happy; do
+    if ! have $package; then
+	cabal install $package \
+	    -j \
+	    --enable-library-profiling --disable-executable-profiling \
+	    --enable-optimization
+    fi
+done
+
+cabal install \
+    --enable-library-profiling --enable-executable-profiling \
+    --alex-options="--ghc --template=\"$TOP/alex\""
