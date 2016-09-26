@@ -7,3 +7,7 @@
 *.hi
 *.o
 dist/
+
+# Cabal stuff
+.cabal-sandbox/
+cabal.sandbox.config
