@@ -70,7 +70,7 @@ catchErrors :: Either String ScannedToken -> Either String ScannedToken
 catchErrors e = e -- default case
 
 scan :: String -> [Either String ScannedToken]
-scan = catchErrors . alexScanTokens
+scan = map catchErrors . alexScanTokens
 
 formatTokenOrError :: Either String ScannedToken -> Either String String
 formatTokenOrError (Left err) = Left err
