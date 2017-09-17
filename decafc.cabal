@@ -36,6 +36,7 @@ executable decafc
                      , array ==0.5.*
                      , split ==0.2.*
                      , transformers ==0.4.*
+                     , pretty-show
   build-tools:         alex >=3.0.2
                      , happy
 
