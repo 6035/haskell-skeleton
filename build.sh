@@ -9,6 +9,12 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the X11 license for more details.
 
+# IMPORTANT:
+# if you have changed a file in the base directory or in the `alex/` directory,
+# running this build script will not guarantee its recompilation. run the
+# command `rm -r dist` before running this script to guarantee that everything
+# is recompiled.
+
 declare -r GHC_VERSION=7.8.2
 declare -r TOP="$(git rev-parse --show-toplevel)"
 
@@ -39,4 +45,10 @@ done
 
 cabal install \
     --enable-library-profiling --enable-executable-profiling \
-    --alex-options="--ghc --template=\"$TOP/alex\""
+    --alex-options="--ghc --template=\"$TOP/alex\"" #\
+#   --happy-options="-i -a -d"
+# uncomment the trailing '\' on line 42 and the entirety of line 43 to add
+# debug info to happy. the '-i' flag outputs a state diagram of the compiled
+# parser into the file `src/Parser.info`, and the '-a -d' flag combo tells
+# happy to print state transitions and actions taken during a parse to stderr.
+# They are most useful when used together.

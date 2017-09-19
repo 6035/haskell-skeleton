@@ -24,6 +24,8 @@ import System.Environment (getProgName)
 import qualified System.Exit
 import System.IO (IOMode(..), hClose, hPutStrLn, openFile, stdout, stderr)
 import Text.Printf (printf)
+import Debug.Trace
+import Text.Show.Pretty
 
 import qualified CLI
 import Configuration (Configuration, CompilerStage(..))
@@ -101,7 +103,7 @@ scan configuration input =
   Right $ [ bracket openOutputHandle hClose $ \hOutput ->
              forM_ tokensAndErrors $ \tokOrError ->
                case tokOrError of
-                 Left err -> hPutStrLn stderr err
+                 Left err -> hPutStrLn hOutput err
                  Right tok -> hPutStrLn hOutput tok
           ]
   where v |> f = f v            -- like a Unix pipeline, but pure
@@ -114,4 +116,7 @@ parse configuration input = do
   mapM_ (mungeErrorMessage configuration . Left) errors
   -- Otherwise, attempt a parse.
   void $ mungeErrorMessage configuration $ Parser.parse tokens
+  -- comment the above line and uncomment the following two lines to print out your parse tree
+  --let x = Parser.parse tokens
+  --void $ mungeErrorMessage configuration $ trace (ppShow x) x
   Right []

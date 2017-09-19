@@ -24,14 +24,15 @@ module Scanner ( ScannedToken(..)
 ----------------------------------- Tokens ------------------------------------
 
 $alpha = [a-zA-Z]
+$white2 = $white # \f -- we want the scanner to error on '\f' (form feed) characters
 
 tokens :-
-  $white+ ;
-  "//".*  ;                     -- comment
-  class   { \posn s -> scannedToken posn $ Keyword s }
-  \{      { \posn _ -> scannedToken posn LCurly }
-  \}      { \posn _ -> scannedToken posn RCurly }
-  $alpha+ { \posn s -> scannedToken posn $ Identifier s }
+  $white2+ ;
+  "//".*   ;                     -- comment
+  class    { \posn s -> scannedToken posn $ Keyword s }
+  \{       { \posn _ -> scannedToken posn LCurly }
+  \}       { \posn _ -> scannedToken posn RCurly }
+  $alpha+  { \posn s -> scannedToken posn $ Identifier s }
 
 
 ----------------------------- Representing tokens -----------------------------
@@ -63,8 +64,13 @@ scannedToken (AlexPn _ lineNo columnNo) tok = ScannedToken lineNo columnNo tok
 
 ---------------------------- Scanning entry point -----------------------------
 
+-- fill out this function with extra cases if you use error tokens
+-- and want them to be treated as errors instead of valid tokens
+catchErrors :: Either String ScannedToken -> Either String ScannedToken
+catchErrors e = e -- default case
+
 scan :: String -> [Either String ScannedToken]
-scan = alexScanTokens
+scan = map catchErrors . alexScanTokens
 
 formatTokenOrError :: Either String ScannedToken -> Either String String
 formatTokenOrError (Left err) = Left err
