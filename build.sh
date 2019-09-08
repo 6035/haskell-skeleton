@@ -21,31 +21,31 @@ declare -r TOP="$(git rev-parse --show-toplevel)"
 declare -r GREP="grep --quiet --no-messages"
 
 function have {
-    type "$1" &>/dev/null
+  type "$1" &>/dev/null
 }
 
 cd "$TOP"
-eval $(attach -Padd -b -f ghc)
-
-if [[ ! -d .cabal-sandbox ]]; then
-    # No Cabal sandbox yet.  Set one up.
-    cabal sandbox init
-fi
+#eval $(attach -Padd -b -f ghc)
+./setup.sh
+export PATH="$(realpath .cabal-exec):$PATH"
 
 PATH="$TOP"/.cabal-sandbox/bin:"$PATH"
 
 for package in alex happy; do
-    if ! have $package; then
-	cabal install $package \
-	    -j \
-	    --enable-library-profiling --disable-executable-profiling \
-	    --enable-optimization
-    fi
+  if ! [[ -f "$HOME/.cabal-install/$package" ]]; then
+    cabal install $package \
+        -j \
+        --enable-library-profiling \
+        --disable-executable-profiling \
+        --enable-optimization \
+        --installdir="$HOME/.cabal-install"
+  fi
 done
 
 cabal install \
-    --enable-library-profiling --enable-executable-profiling \
-    --alex-options="--ghc --template=\"$TOP/alex\"" #\
+    --enable-library-profiling \
+    --enable-executable-profiling \
+    --alex-options="--ghc --template=\"$TOP/alex\""
 #   --happy-options="-i -a -d"
 # uncomment the trailing '\' on line 42 and the entirety of line 43 to add
 # debug info to happy. the '-i' flag outputs a state diagram of the compiled

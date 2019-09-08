@@ -2,6 +2,7 @@
 # make-tarball.sh -- Athena script to build a tarball for project handin
 # Copyright (C) 2013 Cam Tenny <cjtenny@mit.edu>
 
+exit
 cd $(git rev-parse --show-toplevel)
 add -f ghc
 cabal clean
