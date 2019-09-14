@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 # build.sh -- Athena build script
+# Copyright (C) 2019  Qiantan Hong <qhong@mit.edu>
 # Copyright (C) 2013, 2014  Benjamin Barenblat <bbaren@mit.edu>
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -42,10 +43,13 @@ for package in alex happy; do
   fi
 done
 
+mkdir -p "$TOP/.cabal-sandbox/bin"
+
 cabal install \
     --enable-library-profiling \
     --enable-executable-profiling \
-    --alex-options="--ghc --template=\"$TOP/alex\""
+    --alex-options="--ghc --template=\"$TOP/alex\""\
+    --installdir="$TOP/.cabal-sandbox/bin"
 #   --happy-options="-i -a -d"
 # uncomment the trailing '\' on line 42 and the entirety of line 43 to add
 # debug info to happy. the '-i' flag outputs a state diagram of the compiled
