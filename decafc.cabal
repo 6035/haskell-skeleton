@@ -1,3 +1,4 @@
+-- Copyright (C) 2019  Qiantan Hong <qhong@mit.edu>
 -- Copyright (C) 2013, 2014  Benjamin Barenblat <bbaren@mit.edu>
 --
 -- This file is a part of decafc.
@@ -19,7 +20,7 @@ author:              Benjamin Barenblat
 maintainer:          bbaren@mit.edu
 license:             MIT
 license-file:        LICENSE
-extra-source-files:  alex/AlexWrapper-6.035
+extra-source-files:  alex/AlexWrapper-basic
 build-type:          Simple
 tested-with:         GHC==7.10.3
 
@@ -37,7 +38,7 @@ executable decafc
                      , split
                      , transformers
                      , pretty-show
-  build-tools:         alex >=3.0.2
+  build-tools:         alex == 3.2.4
                      , happy
 
 

@@ -18,7 +18,7 @@ module Scanner ( ScannedToken(..)
                ) where
 }
 
-%wrapper "6.035"
+%wrapper "basic"
 
 
 ----------------------------------- Tokens ------------------------------------
